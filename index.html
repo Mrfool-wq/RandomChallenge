@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontier Challenge Generator - RDR2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rye&family=Cinzel:wght@400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #2c1810 0%, #3d2517 50%, #2c1810 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, transparent 1px, transparent 2px, rgba(0,0,0,0.1) 3px),
+                repeating-linear-gradient(90deg, rgba(0,0,0,0.1) 0px, transparent 1px, transparent 2px, rgba(0,0,0,0.1) 3px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wanted-poster {
+            background: linear-gradient(to bottom, #e8d5b7 0%, #d4b896 50%, #c9a97a 100%);
+            border: 15px solid #2c1810;
+            box-shadow: 
+                0 0 0 3px #8b4513,
+                0 20px 60px rgba(0,0,0,0.8),
+                inset 0 0 100px rgba(0,0,0,0.1);
+            padding: 40px;
+            position: relative;
+            text-align: center;
+        }
+
+        .wanted-poster::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.15"/></svg>');
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Rye', cursive;
+            font-size: 3em;
+            color: #EE0000;
+            text-shadow: 
+                3px 3px 0 #191C1F,
+                5px 5px 10px rgba(0,0,0,0.5);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #191C1F;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .ornament {
+            width: 200px;
+            height: 3px;
+            background: #EE0000;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .ornament::before,
+        .ornament::after {
+            content: '◆';
+            position: absolute;
+            color: #EE0000;
+            font-size: 20px;
+            top: -9px;
+        }
+
+        .ornament::before {
+            left: -20px;
+        }
+
+        .ornament::after {
+            right: -20px;
+        }
+
+        .category-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .category-btn {
+            background: #191C1F;
+            color: #e8d5b7;
+            border: 3px solid #8b4513;
+            padding: 12px 24px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .category-btn:hover {
+            background: #EE0000;
+            color: #fff;
+            border-color: #191C1F;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(238,0,0,0.4);
+        }
+
+        .category-btn.active {
+            background: #EE0000;
+            color: #fff;
+            border-color: #191C1F;
+        }
+
+        .challenge-box {
+            background: rgba(25, 28, 31, 0.8);
+            border: 4px solid #8b4513;
+            padding: 40px;
+            margin: 30px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .challenge-box::before {
+            content: '★';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            color: #EE0000;
+            background: #e8d5b7;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #8b4513;
+            border-radius: 50%;
+        }
+
+        .challenge-text {
+            font-size: 1.5em;
+            color: #e8d5b7;
+            line-height: 1.6;
+            font-style: italic;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .generate-btn {
+            background: #EE0000;
+            color: #fff;
+            border: 4px solid #191C1F;
+            padding: 18px 50px;
+            font-family: 'Rye', cursive;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.6),
+                inset 0 -4px 8px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .generate-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .generate-btn:hover {
+            background: #c40000;
+            transform: scale(1.05);
+            box-shadow: 
+                0 12px 24px rgba(238,0,0,0.6),
+                inset 0 -4px 8px rgba(0,0,0,0.3);
+        }
+
+        .generate-btn:active {
+            transform: scale(0.98);
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            background: #8b4513;
+            color: #e8d5b7;
+            padding: 8px 20px;
+            border: 2px solid #191C1F;
+            margin-top: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(139, 69, 19, 0.3);
+            border: 3px solid #8b4513;
+            padding: 15px 25px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #191C1F;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            color: #EE0000;
+            font-weight: bold;
+            font-family: 'Rye', cursive;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .wanted-poster {
+                padding: 25px;
+                border-width: 10px;
+            }
+
+            .challenge-text {
+                font-size: 1.2em;
+            }
+
+            .generate-btn {
+                padding: 15px 35px;
+                font-size: 1.1em;
+            }
+
+            .category-btn {
+                padding: 10px 18px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="wanted-poster">
+            <div class="header">
+                <h1>Frontier</h1>
+                <div class="ornament"></div>
+                <div class="subtitle">Challenge Generator</div>
+            </div>
+
+            <div class="category-selector">
+                <button class="category-btn active" data-category="all">All Challenges</button>
+                <button class="category-btn" data-category="art">Art</button>
+                <button class="category-btn" data-category="writing">Writing</button>
+                <button class="category-btn" data-category="photo">Photography</button>
+                <button class="category-btn" data-category="music">Music</button>
+                <button class="category-btn" data-category="creative">Creative</button>
+            </div>
+
+            <div class="challenge-box">
+                <div class="challenge-text" id="challengeText">
+                    Click the button below to reveal your frontier challenge, partner.
+                </div>
+            </div>
+
+            <div class="difficulty-badge" id="difficultyBadge">Difficulty: Unknown</div>
+
+            <div style="margin-top: 30px;">
+                <button class="generate-btn" onclick="generateChallenge()">
+                    Draw Challenge
+                </button>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">Challenges Drawn</div>
+                    <div class="stat-value" id="totalChallenges">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Current Streak</div>
+                    <div class="stat-value" id="streakCount">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const challenges = {
+            art: [
+                { text: "Draw a wanted poster for a legendary outlaw", difficulty: "Medium" },
+                { text: "Sketch the landscape of Saint Denis at sunset", difficulty: "Hard" },
+                { text: "Design a new gang logo in the Old West style", difficulty: "Medium" },
+                { text: "Paint a portrait using only earth tones", difficulty: "Medium" },
+                { text: "Create a comic strip about a botched train robbery", difficulty: "Hard" },
+                { text: "Illustrate a Native American dreamcatcher", difficulty: "Easy" },
+                { text: "Draw your character in cowboy attire", difficulty: "Easy" },
+                { text: "Sketch a detailed revolver with engravings", difficulty: "Hard" },
+                { text: "Design a saloon sign for 'The Golden Horseshoe'", difficulty: "Medium" },
+                { text: "Illustrate a camp scene with a fire and horses", difficulty: "Medium" }
+            ],
+            writing: [
+                { text: "Write a campfire story about a cursed gold mine", difficulty: "Medium" },
+                { text: "Compose a ballad about a gunslinger's last stand", difficulty: "Hard" },
+                { text: "Write a sheriff's report on a missing stagecoach", difficulty: "Easy" },
+                { text: "Create dialogue between two outlaws planning a heist", difficulty: "Medium" },
+                { text: "Write a letter from a settler to their family back East", difficulty: "Easy" },
+                { text: "Pen a newspaper article about a legendary shootout", difficulty: "Medium" },
+                { text: "Write a bounty hunter's journal entry", difficulty: "Easy" },
+                { text: "Create a tragic love story set in Valentine", difficulty: "Hard" },
+                { text: "Write a saloon keeper's memoir about famous patrons", difficulty: "Hard" },
+                { text: "Compose a poem about the untamed frontier", difficulty: "Medium" }
+            ],
+            photo: [
+                { text: "Capture the golden hour in a rural setting", difficulty: "Medium" },
+                { text: "Photograph something that represents freedom", difficulty: "Easy" },
+                { text: "Take a silhouette shot at sunset", difficulty: "Medium" },
+                { text: "Capture movement using motion blur", difficulty: "Hard" },
+                { text: "Photograph nature's textures up close", difficulty: "Easy" },
+                { text: "Create a moody black and white portrait", difficulty: "Medium" },
+                { text: "Capture reflections in water", difficulty: "Medium" },
+                { text: "Photograph a journey using a series of 5 images", difficulty: "Hard" },
+                { text: "Take a photo that tells a story without people", difficulty: "Medium" },
+                { text: "Capture the beauty of decay or rust", difficulty: "Easy" }
+            ],
+            music: [
+                { text: "Compose a 30-second Western film score", difficulty: "Hard" },
+                { text: "Create a rhythm using only hand percussion", difficulty: "Easy" },
+                { text: "Write lyrics for an outlaw country song", difficulty: "Medium" },
+                { text: "Record ambient sounds and create a soundscape", difficulty: "Medium" },
+                { text: "Compose a melancholic harmonica melody", difficulty: "Medium" },
+                { text: "Create a campfire guitar piece in 3/4 time", difficulty: "Hard" },
+                { text: "Write a drinking song for a frontier saloon", difficulty: "Easy" },
+                { text: "Compose music inspired by galloping horses", difficulty: "Medium" },
+                { text: "Create a tense showdown theme", difficulty: "Hard" },
+                { text: "Record a cover of a classic Western theme", difficulty: "Medium" }
+            ],
+            creative: [
+                { text: "Build something useful from natural materials", difficulty: "Hard" },
+                { text: "Cook a meal using only five ingredients", difficulty: "Medium" },
+                { text: "Create a treasure map with riddles", difficulty: "Medium" },
+                { text: "Design and build a miniature frontier town", difficulty: "Hard" },
+                { text: "Craft a leather accessory by hand", difficulty: "Hard" },
+                { text: "Organize a themed photoshoot with friends", difficulty: "Medium" },
+                { text: "Create a time capsule with meaningful items", difficulty: "Easy" },
+                { text: "Design custom playing cards with Western themes", difficulty: "Medium" },
+                { text: "Build a diorama of a famous Western scene", difficulty: "Hard" },
+                { text: "Create your own frontier survival kit", difficulty: "Easy" }
+            ]
+        };
+
+        let currentCategory = 'all';
+        let totalCount = parseInt(localStorage.getItem('totalChallenges')) || 0;
+        let streakCount = parseInt(localStorage.getItem('streakCount')) || 0;
+
+        document.getElementById('totalChallenges').textContent = totalCount;
+        document.getElementById('streakCount').textContent = streakCount;
+
+        // Category button handlers
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.dataset.category;
+            });
+        });
+
+        function generateChallenge() {
+            let availableChallenges = [];
+
+            if (currentCategory === 'all') {
+                Object.values(challenges).forEach(category => {
+                    availableChallenges = availableChallenges.concat(category);
+                });
+            } else {
+                availableChallenges = challenges[currentCategory];
+            }
+
+            const randomChallenge = availableChallenges[Math.floor(Math.random() * availableChallenges.length)];
+            
+            const challengeText = document.getElementById('challengeText');
+            const difficultyBadge = document.getElementById('difficultyBadge');
+
+            // Fade out
+            challengeText.style.opacity = '0';
+            difficultyBadge.style.opacity = '0';
+
+            setTimeout(() => {
+                challengeText.textContent = randomChallenge.text;
+                difficultyBadge.textContent = `Difficulty: ${randomChallenge.difficulty}`;
+                
+                // Fade in
+                challengeText.style.transition = 'opacity 0.6s';
+                difficultyBadge.style.transition = 'opacity 0.6s';
+                challengeText.style.opacity = '1';
+                difficultyBadge.style.opacity = '1';
+
+                // Update stats
+                totalCount++;
+                streakCount++;
+                localStorage.setItem('totalChallenges', totalCount);
+                localStorage.setItem('streakCount', streakCount);
+                
+                document.getElementById('totalChallenges').textContent = totalCount;
+                document.getElementById('streakCount').textContent = streakCount;
+            }, 300);
+        }
+    </script>
+</body>
+</html>
